@@ -9,28 +9,34 @@
 #include "CrossMatch.h"
 #include "cmhead.h"
 
-using std::string;
-
 #ifndef STARCLASSIFY_H
 #define	STARCLASSIFY_H
 
 class CMStarClassify : public CMStar {
 public:
-  string line;
-
+  char *line;
 };
 
 class PartitionClassify : public Partition {
 public:
+  long starCount = 0;
+public:
+  PartitionClassify();
+  PartitionClassify(float errBox, float minZoneLen, float searchRds);
   void searchSimilarStar(long zoneIdx, CMStar *objStar);
-  CMStar *match(float errorBox);
+  CMStar *match();
 };
 
 class CrossMatchClassify : public CrossMatch {
+private:
+  CMStar *rstStar;
+  PartitionClassify *zones;
 public:
   CMStar *readStarFile(char *fName, int &starNum);
-  void match(char *fName, float errorBox);
-  void writeResult(char *outfName, float errorBox);
+  void match(char *infile, char *outfile, float errorBox);
+  void writeResult(char *outfName);
+  void freeMchList(CMStar *starList);
+  void freeRstList(CMStar *starList);
 };
 
 class StarClassify {
