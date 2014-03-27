@@ -15,16 +15,24 @@
 class CMStarClassify : public CMStar {
 public:
   char *line;
+  int number;
+public:
+  int getNum();
+  bool isSame(CMStarClassify *star);
 };
 
 class PartitionClassify : public Partition {
 public:
   long starCount = 0;
+  long rptStar = 0;
 public:
   PartitionClassify();
   PartitionClassify(float errBox, float minZoneLen, float searchRds);
   void searchSimilarStar(long zoneIdx, CMStar *objStar);
   CMStar *match();
+  bool hasSame(CMStarClassify *mchStar, CMStarClassify *star);
+  void addMchSort(CMStarClassify *mchStar, CMStarClassify *star);
+  void swapValue(CMStarClassify *star1, CMStarClassify *star2);
 };
 
 class CrossMatchClassify : public CrossMatch {

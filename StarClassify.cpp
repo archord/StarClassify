@@ -13,10 +13,78 @@
 
 using namespace std;
 
+int CMStarClassify::getNum() {
+  char b[10];
+  char *numHed = strrchr(line, '_') + 1;
+  char *numEnd = strstr(numHed, ".fit");
+  strncpy(b, numHed, numEnd - numHed);
+  b[numEnd - numHed] = '\0';
+  number = atoi(b);
+}
+
+bool CMStarClassify::isSame(CMStarClassify *star) {
+  if (star->number == number) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void PartitionClassify::swapValue(CMStarClassify *star1, CMStarClassify *star2) {
+  CMStarClassify *tStar = (CMStarClassify *) malloc(sizeof (CMStarClassify));
+  memcpy(tStar, star1, sizeof (CMStarClassify));
+  memcpy(star1, star2, sizeof (CMStarClassify));
+  memcpy(star2, tStar, sizeof (CMStarClassify));
+  CMStar *tMch = star1->match;
+  star1->match = star2->match;
+  star2->match = tMch;
+  free(tStar);
+}
+
 PartitionClassify::PartitionClassify(float errBox, float minZoneLen, float searchRds) {
   errRadius = errBox;
   minZoneLength = minZoneLen;
   searchRadius = searchRds;
+}
+
+bool PartitionClassify::hasSame(CMStarClassify *mchStar, CMStarClassify *objStar) {
+
+  CMStarClassify *nextStar = mchStar;
+  while (nextStar) {
+    if (objStar->isSame(nextStar)) {
+      return true;
+    }
+    nextStar = (CMStarClassify *) nextStar->match;
+  }
+  return false;
+}
+
+void PartitionClassify::addMchSort(CMStarClassify *headStar, CMStarClassify *tStar) {
+
+  tStar->match = NULL;
+  if (headStar->number > tStar->number) {
+    swapValue(headStar, tStar);
+    tStar->match = headStar->match;
+    headStar->match = tStar;
+  } else {
+    if (NULL == headStar->match) {
+      headStar->match = tStar;
+    } else {
+      CMStarClassify *hStar = (CMStarClassify *) headStar->match;
+      CMStarClassify *curStar = hStar;
+      if (curStar->number > tStar->number) {
+	tStar->match = curStar;
+	headStar->match = tStar;
+      } else {
+	while (NULL != curStar && curStar->number < tStar->number) {
+	  hStar = curStar;
+	  curStar = (CMStarClassify *) curStar->match;
+	}
+	tStar->match = hStar->match;
+	hStar->match = tStar;
+      }
+    }
+  }
 }
 
 /**
@@ -27,14 +95,16 @@ PartitionClassify::PartitionClassify(float errBox, float minZoneLen, float searc
 void PartitionClassify::searchSimilarStar(long zoneIdx, CMStar *objStar) {
 
   float error = errRadius;
-  CMStar *matchStar = objStar->match;
+  //CMStar *matchStar = objStar->match;
   CMStar *nextStar = zoneArray[zoneIdx].star;
   CMStar *topStar = zoneArray[zoneIdx].star;
   CMStar *tmpStar = NULL;
 
+  /*
   while (NULL != matchStar && NULL != matchStar->match) {
     matchStar = matchStar->match;
   }
+   */
 
   /**
    * 如果区域中的第一个星就匹配，则在去掉这个星后，区域的头指针需要指向下一个星
@@ -43,6 +113,7 @@ void PartitionClassify::searchSimilarStar(long zoneIdx, CMStar *objStar) {
   while (nextStar) {
     float distance = getLineDistance(nextStar, objStar);
     if (distance < error) {
+      nextStar->error = distance;
 #ifdef PRINT_CM_DETAILa
       printf("mtch star id: %d\n", nextStar->id);
 #endif
@@ -56,23 +127,32 @@ void PartitionClassify::searchSimilarStar(long zoneIdx, CMStar *objStar) {
 	nextStar = nextStar->next;
       }
 
-      tmpStar->next = NULL;
-      tmpStar->match = NULL;
-
-      zoneArray[zoneIdx].starNum--;
-      starCount++;
-      if (NULL == matchStar) {
-	objStar->match = tmpStar;
-	matchStar = tmpStar;
+      if (hasSame((CMStarClassify *) objStar, (CMStarClassify *) tmpStar)) {
+	rptStar++;
+	zoneArray[zoneIdx].starNum--;
+	free(tmpStar);
       } else {
-	matchStar->match = tmpStar;
-	matchStar = matchStar->match;
+	tmpStar->next = NULL;
+	tmpStar->match = NULL;
+	zoneArray[zoneIdx].starNum--;
+	starCount++;
+	addMchSort((CMStarClassify *) objStar, (CMStarClassify *) tmpStar);
+	/**
+	if (NULL == matchStar) {
+	  objStar->match = tmpStar;
+	  matchStar = tmpStar;
+	} else {
+	  matchStar->match = tmpStar;
+	  matchStar = matchStar->match;
+	}
+	matchStar->error = distance;
+	 */
       }
-      matchStar->error = distance;
     } else {
       topStar = nextStar;
       nextStar = nextStar->next;
     }
+
   }
 }
 
@@ -81,7 +161,6 @@ CMStar *PartitionClassify::match() {
   CMStar *headStar = NULL;
   CMStar *curStar = NULL;
   int starClassify = 0;
-  int tNum = 0;
 
   for (int idx = 0; idx < totalZone; idx++) {
     if (zoneArray[idx].starNum > 0) {
@@ -106,6 +185,7 @@ CMStar *PartitionClassify::match() {
 	//去掉当前这颗星
 	zoneArray[idx].star = curStar->next;
 	curStar->next = NULL;
+	curStar->match = NULL;
 	//分区中星的总数减一
 	zoneArray[idx].starNum--;
 	starCount++;
@@ -119,14 +199,13 @@ CMStar *PartitionClassify::match() {
 	}
 	free(searchZonesIdx);
       }
-      tNum += zoneArray[idx].starNum;
     }
   }
 
 #ifdef PRINT_CM_DETAIL
-  printf("Classified stars: %d\n", starClassify);
-  printf("match total stars: %d\n", starCount);
-  printf("match total stars2: %d\n", tNum);
+  printf("stars: %d\n", starClassify);
+  printf("total records: %d\n", starCount);
+  printf("total repeat records: %d\n", rptStar);
 #endif
 
   return headStar;
@@ -157,6 +236,7 @@ CMStar *CrossMatchClassify::readStarFile(char *fName, int &starNum) {
       nextStar->match = NULL;
       nextStar->line = (char*) malloc(strlen(line) + 1);
       strcpy(nextStar->line, line);
+      nextStar->getNum();
       if (NULL == starList) {
 	starList = nextStar;
 	tStar = nextStar;
@@ -167,7 +247,7 @@ CMStar *CrossMatchClassify::readStarFile(char *fName, int &starNum) {
       starNum++;
     }
   }
-  printf("read %d stars from %s\n", starNum - 1, fName);
+  printf("read %d records from %s\n", starNum - 1, fName);
   return starList;
 }
 
@@ -199,11 +279,11 @@ void CrossMatchClassify::writeResult(char *outfName) {
   while (NULL != tStar) {
     clfStarNum++;
     fprintf(fp, "#Star %d\n", clfStarNum);
-    fprintf(fp, "%s", tStar->line);
+    fprintf(fp, "%d\t %s", tStar->number, tStar->line);
     long starMchNum = 1;
     CMStarClassify *tStarMch = (CMStarClassify *) tStar->match;
     while (NULL != tStarMch) {
-      fprintf(fp, "%s", tStarMch->line);
+      fprintf(fp, "%d\t %s", tStarMch->number, tStarMch->line);
       starMchNum++;
       tStarMch = (CMStarClassify *) tStarMch->match;
     }
@@ -213,7 +293,8 @@ void CrossMatchClassify::writeResult(char *outfName) {
   }
   fclose(fp);
 
-  printf("write %d classes, total %d stars to %s\n", clfStarNum, totalStar, outfName);
+  printf("write %d stars, total %d records to %s\n", clfStarNum, totalStar, outfName);
+  printf("total repeat records: %d\n", zones->rptStar);
 }
 
 void CrossMatchClassify::freeRstList(CMStar *starList) {
