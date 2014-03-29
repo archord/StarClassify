@@ -38,6 +38,7 @@ void PartitionClassify::swapValue(CMStarClassify *star1, CMStarClassify *star2) 
   CMStar *tMch = star1->match;
   star1->match = star2->match;
   star2->match = tMch;
+
   free(tStar);
 }
 
@@ -60,6 +61,15 @@ bool PartitionClassify::hasSame(CMStarClassify *mchStar, CMStarClassify *objStar
 }
 
 void PartitionClassify::addMchSort(CMStarClassify *headStar, CMStarClassify *tStar) {
+
+  headStar->avgMag += tStar->mag;
+  headStar->avgX += tStar->pixx;
+  headStar->avgY += tStar->pixy;
+  headStar->total++;
+  tStar->avgMag = headStar->avgMag;
+  tStar->avgX = headStar->avgX;
+  tStar->avgY = headStar->avgY;
+  tStar->total = headStar->total;
 
   tStar->match = NULL;
   if (headStar->number > tStar->number) {
@@ -225,13 +235,19 @@ CMStar *CrossMatchClassify::readStarFile(char *fName, int &starNum) {
   char line[MaxStringLength];
   float pixx = 0.0;
   float pixy = 0.0;
+  float mag = 0.0;
 
   while (fgets(line, MaxStringLength, fp) != NULL) {
-    if (2 == sscanf(line, "%*s%*s%*s%*s%f%f", &pixx, &pixy)) {
+    if (3 == sscanf(line, "%*s%*s%*s%*s%f%f%*s%*s%*s%*s%*s%*s%f", &pixx, &pixy, &mag)) {
       nextStar = (CMStarClassify *) malloc(sizeof (CMStarClassify));
       nextStar->id = starNum;
       nextStar->pixx = pixx;
       nextStar->pixy = pixy;
+      nextStar->mag = mag;
+      nextStar->avgMag = mag;
+      nextStar->avgX = pixx;
+      nextStar->avgY = pixy;
+      nextStar->total = 1;
       nextStar->next = NULL;
       nextStar->match = NULL;
       nextStar->line = (char*) malloc(strlen(line) + 1);
@@ -260,7 +276,10 @@ void CrossMatchClassify::match(char *infile, char *outfile, float errorBox) {
   zones = new PartitionClassify(errorBox, minZoneLen, searchRds);
   zones->partitonStarField(refStarList, refNum);
   rstStar = zones->match();
-  writeResult(outfile);
+  writeResult1(outfile);
+  writeResult2(outfile);
+  writeResult3(outfile);
+  writeXYMag(outfile);
   freeRstList(rstStar);
   zones->freeZoneArray();
 
@@ -269,32 +288,122 @@ void CrossMatchClassify::match(char *infile, char *outfile, float errorBox) {
 #endif
 }
 
-void CrossMatchClassify::writeResult(char *outfName) {
+void CrossMatchClassify::writeXYMag(char *outfName) {
 
-  FILE *fp = fopen(outfName, "w");
+  char rstfile[256];
+  sprintf(rstfile, "%s.xymag", outfName);
+
+  FILE *fp = fopen(rstfile, "w");
+
+  long clfStarNum = 0;
+  CMStarClassify *tStar = (CMStarClassify*) rstStar;
+  while (NULL != tStar) {
+    if (tStar->total >= 3) {
+      clfStarNum++;
+      fprintf(fp, "#%f %f %f\n", tStar->avgX / tStar->total, tStar->avgY / tStar->total, tStar->avgMag / tStar->total);
+    }
+    tStar = (CMStarClassify *) tStar->next;
+  }
+  fclose(fp);
+
+  printf("write %d stars to %s\n", clfStarNum, rstfile);
+  printf("total repeat records: %d\n", zones->rptStar);
+}
+
+void CrossMatchClassify::writeResult1(char *outfName) {
+
+  char rstfile[256];
+  sprintf(rstfile, "%s.1star", outfName);
+
+  FILE *fp = fopen(rstfile, "w");
 
   long clfStarNum = 0;
   long totalStar = 0;
   CMStarClassify *tStar = (CMStarClassify*) rstStar;
   while (NULL != tStar) {
-    clfStarNum++;
-    fprintf(fp, "#Star %d\n", clfStarNum);
-    fprintf(fp, "%d\t %s", tStar->number, tStar->line);
-    long starMchNum = 1;
-    CMStarClassify *tStarMch = (CMStarClassify *) tStar->match;
-    while (NULL != tStarMch) {
-      fprintf(fp, "%d\t %s", tStarMch->number, tStarMch->line);
-      starMchNum++;
-      tStarMch = (CMStarClassify *) tStarMch->match;
+    if (tStar->total == 1) {
+      clfStarNum++;
+      //fprintf(fp, "#Star %d\n", clfStarNum);
+      //fprintf(fp, "#%f %f %f\n", tStar->avgX / tStar->total, tStar->avgY / tStar->total, tStar->avgMag / tStar->total);
+      fprintf(fp, "%s", tStar->line);
+      CMStarClassify *tStarMch = (CMStarClassify *) tStar->match;
+      while (NULL != tStarMch) {
+	fprintf(fp, "%s", tStarMch->line);
+	tStarMch = (CMStarClassify *) tStarMch->match;
+      }
+      totalStar += tStar->total;
+      //fprintf(fp, "#total matched %d\n\n", tStar->total);
     }
-    totalStar += starMchNum;
-    fprintf(fp, "#total matched %d\n\n", starMchNum);
     tStar = (CMStarClassify *) tStar->next;
   }
   fclose(fp);
 
-  printf("write %d stars, total %d records to %s\n", clfStarNum, totalStar, outfName);
-  printf("total repeat records: %d\n", zones->rptStar);
+  printf("write %d stars, total %d records to %s\n", clfStarNum, totalStar, rstfile);
+  //printf("total repeat records: %d\n", zones->rptStar);
+}
+
+void CrossMatchClassify::writeResult2(char *outfName) {
+
+  char rstfile[256];
+  sprintf(rstfile, "%s.2star", outfName);
+
+  FILE *fp = fopen(rstfile, "w");
+
+  long clfStarNum = 0;
+  long totalStar = 0;
+  CMStarClassify *tStar = (CMStarClassify*) rstStar;
+  while (NULL != tStar) {
+    if (tStar->total == 2) {
+      clfStarNum++;
+      fprintf(fp, "#Star %d\n", clfStarNum);
+      fprintf(fp, "#%f %f %f\n", tStar->avgX / tStar->total, tStar->avgY / tStar->total, tStar->avgMag / tStar->total);
+      fprintf(fp, "%s", tStar->line);
+      CMStarClassify *tStarMch = (CMStarClassify *) tStar->match;
+      while (NULL != tStarMch) {
+	fprintf(fp, "%s", tStarMch->line);
+	tStarMch = (CMStarClassify *) tStarMch->match;
+      }
+      totalStar += tStar->total;
+      //fprintf(fp, "#total matched %d\n\n", tStar->total);
+    }
+    tStar = (CMStarClassify *) tStar->next;
+  }
+  fclose(fp);
+
+  printf("write %d stars, total %d records to %s\n", clfStarNum, totalStar, rstfile);
+  //printf("total repeat records: %d\n", zones->rptStar);
+}
+
+void CrossMatchClassify::writeResult3(char *outfName) {
+
+  char rstfile[256];
+  sprintf(rstfile, "%s.3star", outfName);
+
+  FILE *fp = fopen(rstfile, "w");
+
+  long clfStarNum = 0;
+  long totalStar = 0;
+  CMStarClassify *tStar = (CMStarClassify*) rstStar;
+  while (NULL != tStar) {
+    if (tStar->total >= 3) {
+      clfStarNum++;
+      fprintf(fp, "#Star %d\n", clfStarNum);
+      fprintf(fp, "#%f %f %f\n", tStar->avgX / tStar->total, tStar->avgY / tStar->total, tStar->avgMag / tStar->total);
+      fprintf(fp, "%s", tStar->line);
+      CMStarClassify *tStarMch = (CMStarClassify *) tStar->match;
+      while (NULL != tStarMch) {
+	fprintf(fp, "%s", tStarMch->line);
+	tStarMch = (CMStarClassify *) tStarMch->match;
+      }
+      totalStar += tStar->total;
+      fprintf(fp, "#total matched %d\n\n", tStar->total);
+    }
+    tStar = (CMStarClassify *) tStar->next;
+  }
+  fclose(fp);
+
+  printf("write %d stars, total %d records to %s\n", clfStarNum, totalStar, rstfile);
+  //printf("total repeat records: %d\n", zones->rptStar);
 }
 
 void CrossMatchClassify::freeRstList(CMStar *starList) {

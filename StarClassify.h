@@ -16,6 +16,10 @@ class CMStarClassify : public CMStar {
 public:
   char *line;
   int number;
+  float avgMag;
+  float avgX;
+  float avgY;
+  long total;
 public:
   int getNum();
   bool isSame(CMStarClassify *star);
@@ -42,7 +46,10 @@ private:
 public:
   CMStar *readStarFile(char *fName, int &starNum);
   void match(char *infile, char *outfile, float errorBox);
-  void writeResult(char *outfName);
+  void writeXYMag(char *outfName);
+  void writeResult1(char *outfName);
+  void writeResult2(char *outfName);
+  void writeResult3(char *outfName);
   void freeMchList(CMStar *starList);
   void freeRstList(CMStar *starList);
 };

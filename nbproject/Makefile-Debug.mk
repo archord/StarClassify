@@ -54,7 +54,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-L../CrossMatchLibrary/dist/Debug/MinGW-Windows
+LDLIBSOPTIONS=-L../CrossMatchLibrary/dist/Debug/GNU-Linux-x86 -L../CrossMatchLibrary/dist/Debug/MinGW-Windows
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}

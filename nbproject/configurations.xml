@@ -39,6 +39,7 @@
         </ccTool>
         <linkerTool>
           <linkerAddLib>
+            <pElem>../CrossMatchLibrary/dist/Debug/GNU-Linux-x86</pElem>
             <pElem>../CrossMatchLibrary/dist/Debug/MinGW-Windows</pElem>
           </linkerAddLib>
           <commandLine>-lm -lCrossMatchLibrary</commandLine>

@@ -2,31 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-bool isEmpty(char *str, int len) {
-
-  if (NULL != str && '\0' != str[0]) {
-    for (int i = 0; i < len && '\0' != str[i]; i++) {
-      if (str[i] != ' ' && str[i] != '\t' && str[i] != '\r' &&
-              str[i] != '\n' && str[i] != '\x0b') {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-bool hasNumber(char *str, int len) {
-
-  if (NULL != str && '\0' != str[0]) {
-    for (int i = 0; i < len && '\0' != str[i]; i++) {
-      if (str[i] >= '0' && str[i] <= '9') {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 struct Star1 {
   int x;
   int y;
@@ -49,17 +24,6 @@ void isEmptyHasNumberTest() {
   char *c = "  ";
   char *d = "  \t";
   char *e = "  \n";
-  printf("%d", hasNumber(a, strlen(a)));
-  printf("%d", hasNumber(b, strlen(b)));
-  printf("%d", hasNumber(c, strlen(c)));
-  printf("%d", hasNumber(d, strlen(d)));
-  printf("%d", hasNumber(e, strlen(e)));
-  printf("\n");
-  printf("%d", isEmpty(a, strlen(a)));
-  printf("%d", isEmpty(b, strlen(b)));
-  printf("%d", isEmpty(c, strlen(c)));
-  printf("%d", isEmpty(d, strlen(d)));
-  printf("%d", isEmpty(e, strlen(e)));
   printf("\n");
   float af = 0, bf = 0;
   printf("%d\n", sscanf(a, "%f%f", &af, &bf));
