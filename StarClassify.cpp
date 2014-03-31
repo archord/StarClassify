@@ -300,7 +300,7 @@ void CrossMatchClassify::writeXYMag(char *outfName) {
   while (NULL != tStar) {
     if (tStar->total >= 3) {
       clfStarNum++;
-      fprintf(fp, "#%f %f %f\n", tStar->avgX / tStar->total, tStar->avgY / tStar->total, tStar->avgMag / tStar->total);
+      fprintf(fp, "%f %f %f\n", tStar->avgX / tStar->total, tStar->avgY / tStar->total, tStar->avgMag / tStar->total);
     }
     tStar = (CMStarClassify *) tStar->next;
   }
