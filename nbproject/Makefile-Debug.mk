@@ -21,7 +21,7 @@ FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=MinGW-Windows
+CND_PLATFORM=GNU-Windows
 CND_DLIB_EXT=dll
 CND_CONF=Debug
 CND_DISTDIR=dist
@@ -62,7 +62,7 @@ LDLIBSOPTIONS=-L../CrossMatchLibrary/dist/Debug/GNU-Linux-x86 -L../CrossMatchLib
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/starclassify.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/starclassify ${OBJECTFILES} ${LDLIBSOPTIONS} -lm -lCrossMatchLibrary
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/starclassify.exe ${OBJECTFILES} ${LDLIBSOPTIONS} -lm -lCrossMatchLibrary
 
 ${OBJECTDIR}/StarClassify.o: StarClassify.cpp 
 	${MKDIR} -p ${OBJECTDIR}

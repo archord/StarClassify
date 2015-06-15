@@ -83,15 +83,15 @@ void PartitionClassify::addMchSort(CMStarClassify *headStar, CMStarClassify *tSt
       CMStarClassify *hStar = (CMStarClassify *) headStar->match;
       CMStarClassify *curStar = hStar;
       if (curStar->number > tStar->number) {
-	tStar->match = curStar;
-	headStar->match = tStar;
+        tStar->match = curStar;
+        headStar->match = tStar;
       } else {
-	while (NULL != curStar && curStar->number < tStar->number) {
-	  hStar = curStar;
-	  curStar = (CMStarClassify *) curStar->match;
-	}
-	tStar->match = hStar->match;
-	hStar->match = tStar;
+        while (NULL != curStar && curStar->number < tStar->number) {
+          hStar = curStar;
+          curStar = (CMStarClassify *) curStar->match;
+        }
+        tStar->match = hStar->match;
+        hStar->match = tStar;
       }
     }
   }
@@ -129,34 +129,34 @@ void PartitionClassify::searchSimilarStar(long zoneIdx, CMStar *objStar) {
 #endif
       tmpStar = nextStar;
       if (zoneArray[zoneIdx].star == nextStar) {
-	zoneArray[zoneIdx].star = nextStar->next;
-	topStar = zoneArray[zoneIdx].star;
-	nextStar = zoneArray[zoneIdx].star;
+        zoneArray[zoneIdx].star = nextStar->next;
+        topStar = zoneArray[zoneIdx].star;
+        nextStar = zoneArray[zoneIdx].star;
       } else {
-	topStar->next = nextStar->next;
-	nextStar = nextStar->next;
+        topStar->next = nextStar->next;
+        nextStar = nextStar->next;
       }
 
       if (hasSame((CMStarClassify *) objStar, (CMStarClassify *) tmpStar)) {
-	rptStar++;
-	zoneArray[zoneIdx].starNum--;
-	free(tmpStar);
+        rptStar++;
+        zoneArray[zoneIdx].starNum--;
+        free(tmpStar);
       } else {
-	tmpStar->next = NULL;
-	tmpStar->match = NULL;
-	zoneArray[zoneIdx].starNum--;
-	starCount++;
-	addMchSort((CMStarClassify *) objStar, (CMStarClassify *) tmpStar);
-	/**
-	if (NULL == matchStar) {
-	  objStar->match = tmpStar;
-	  matchStar = tmpStar;
-	} else {
-	  matchStar->match = tmpStar;
-	  matchStar = matchStar->match;
-	}
-	matchStar->error = distance;
-	 */
+        tmpStar->next = NULL;
+        tmpStar->match = NULL;
+        zoneArray[zoneIdx].starNum--;
+        starCount++;
+        addMchSort((CMStarClassify *) objStar, (CMStarClassify *) tmpStar);
+        /**
+        if (NULL == matchStar) {
+          objStar->match = tmpStar;
+          matchStar = tmpStar;
+        } else {
+          matchStar->match = tmpStar;
+          matchStar = matchStar->match;
+        }
+        matchStar->error = distance;
+         */
       }
     } else {
       topStar = nextStar;
@@ -180,34 +180,34 @@ CMStar *PartitionClassify::match() {
       printf("zone star: %d\n", zoneArray[idx].starNum);
 #endif
       while (NULL != zoneArray[idx].star) {
-	//headStar指向结果列表的第一颗星
-	//curStar指向当前待匹配的星
-	if (NULL == headStar) {
-	  headStar = zoneArray[idx].star;
-	  curStar = headStar;
-	} else {
-	  curStar->next = zoneArray[idx].star;
-	  curStar = curStar->next;
-	}
+        //headStar指向结果列表的第一颗星
+        //curStar指向当前待匹配的星
+        if (NULL == headStar) {
+          headStar = zoneArray[idx].star;
+          curStar = headStar;
+        } else {
+          curStar->next = zoneArray[idx].star;
+          curStar = curStar->next;
+        }
 #ifdef PRINT_CM_DETAILa
-	printf("obj star id: %d\n", curStar->id);
+        printf("obj star id: %d\n", curStar->id);
 #endif
-	//去掉当前这颗星
-	zoneArray[idx].star = curStar->next;
-	curStar->next = NULL;
-	curStar->match = NULL;
-	//分区中星的总数减一
-	zoneArray[idx].starNum--;
-	starCount++;
-	//分类星加一
-	starClassify++;
-	//寻找分类星的匹配星
-	long sZoneNum = 0;
-	long *searchZonesIdx = getStarSearchZone(curStar, sZoneNum);
-	for (int i = 0; i < sZoneNum; i++) {
-	  searchSimilarStar(searchZonesIdx[i], curStar);
-	}
-	free(searchZonesIdx);
+        //去掉当前这颗星
+        zoneArray[idx].star = curStar->next;
+        curStar->next = NULL;
+        curStar->match = NULL;
+        //分区中星的总数减一
+        zoneArray[idx].starNum--;
+        starCount++;
+        //分类星加一
+        starClassify++;
+        //寻找分类星的匹配星
+        long sZoneNum = 0;
+        long *searchZonesIdx = getStarSearchZone(curStar, sZoneNum);
+        for (int i = 0; i < sZoneNum; i++) {
+          searchSimilarStar(searchZonesIdx[i], curStar);
+        }
+        free(searchZonesIdx);
       }
     }
   }
@@ -254,11 +254,11 @@ CMStar *CrossMatchClassify::readStarFile(char *fName, int &starNum) {
       strcpy(nextStar->line, line);
       nextStar->getNum();
       if (NULL == starList) {
-	starList = nextStar;
-	tStar = nextStar;
+        starList = nextStar;
+        tStar = nextStar;
       } else {
-	tStar->next = nextStar;
-	tStar = nextStar;
+        tStar->next = nextStar;
+        tStar = nextStar;
       }
       starNum++;
     }
@@ -328,8 +328,8 @@ void CrossMatchClassify::writeResult1(char *outfName) {
       fprintf(fp, "%s", tStar->line);
       CMStarClassify *tStarMch = (CMStarClassify *) tStar->match;
       while (NULL != tStarMch) {
-	fprintf(fp, "%s", tStarMch->line);
-	tStarMch = (CMStarClassify *) tStarMch->match;
+        fprintf(fp, "%s", tStarMch->line);
+        tStarMch = (CMStarClassify *) tStarMch->match;
       }
       totalStar += tStar->total;
       //fprintf(fp, "#total matched %d\n\n", tStar->total);
@@ -360,8 +360,8 @@ void CrossMatchClassify::writeResult2(char *outfName) {
       fprintf(fp, "%s", tStar->line);
       CMStarClassify *tStarMch = (CMStarClassify *) tStar->match;
       while (NULL != tStarMch) {
-	fprintf(fp, "%s", tStarMch->line);
-	tStarMch = (CMStarClassify *) tStarMch->match;
+        fprintf(fp, "%s", tStarMch->line);
+        tStarMch = (CMStarClassify *) tStarMch->match;
       }
       totalStar += tStar->total;
       //fprintf(fp, "#total matched %d\n\n", tStar->total);
@@ -392,8 +392,8 @@ void CrossMatchClassify::writeResult3(char *outfName) {
       fprintf(fp, "%s", tStar->line);
       CMStarClassify *tStarMch = (CMStarClassify *) tStar->match;
       while (NULL != tStarMch) {
-	fprintf(fp, "%s", tStarMch->line);
-	tStarMch = (CMStarClassify *) tStarMch->match;
+        fprintf(fp, "%s", tStarMch->line);
+        tStarMch = (CMStarClassify *) tStarMch->match;
       }
       totalStar += tStar->total;
       fprintf(fp, "#total matched %d\n\n", tStar->total);

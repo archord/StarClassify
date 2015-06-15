@@ -7,21 +7,21 @@ CND_BASEDIR=`pwd`
 CND_BUILDDIR=build
 CND_DISTDIR=dist
 # Debug configuration
-CND_PLATFORM_Debug=MinGW-Windows
-CND_ARTIFACT_DIR_Debug=dist/Debug/MinGW-Windows
+CND_PLATFORM_Debug=GNU-Windows
+CND_ARTIFACT_DIR_Debug=dist/Debug/GNU-Windows
 CND_ARTIFACT_NAME_Debug=starclassify
-CND_ARTIFACT_PATH_Debug=dist/Debug/MinGW-Windows/starclassify
-CND_PACKAGE_DIR_Debug=dist/Debug/MinGW-Windows/package
+CND_ARTIFACT_PATH_Debug=dist/Debug/GNU-Windows/starclassify
+CND_PACKAGE_DIR_Debug=dist/Debug/GNU-Windows/package
 CND_PACKAGE_NAME_Debug=starclassify.tar
-CND_PACKAGE_PATH_Debug=dist/Debug/MinGW-Windows/package/starclassify.tar
+CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Windows/package/starclassify.tar
 # Release configuration
-CND_PLATFORM_Release=GNU-Linux-x86
-CND_ARTIFACT_DIR_Release=dist/Release/GNU-Linux-x86
+CND_PLATFORM_Release=None-Linux-x86
+CND_ARTIFACT_DIR_Release=dist/Release/None-Linux-x86
 CND_ARTIFACT_NAME_Release=starclassify
-CND_ARTIFACT_PATH_Release=dist/Release/GNU-Linux-x86/starclassify
-CND_PACKAGE_DIR_Release=dist/Release/GNU-Linux-x86/package
+CND_ARTIFACT_PATH_Release=dist/Release/None-Linux-x86/starclassify
+CND_PACKAGE_DIR_Release=dist/Release/None-Linux-x86/package
 CND_PACKAGE_NAME_Release=starclassify.tar
-CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux-x86/package/starclassify.tar
+CND_PACKAGE_PATH_Release=dist/Release/None-Linux-x86/package/starclassify.tar
 #
 # include compiler specific variables
 #
